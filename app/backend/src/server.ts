@@ -103,7 +103,7 @@ app.use((req, res, next) => {
   //未ログイン（セッションが存在しないか、セッションのlogindがfalseの時）
   if (!req.session?.logined) {
     //ログイン処理orユーザ登録リクエストの場合、処理続行。
-    if (req.path === "/login" || req.path === "user") {
+    if (req.path === "/login" || req.path === "/user") {
       next();
       return;
     }

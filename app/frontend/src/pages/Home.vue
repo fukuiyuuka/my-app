@@ -2,9 +2,6 @@
 import { ref } from "vue";
 import { api, logout } from "./common";
 import { useCommonData, useLogoutStore } from "../store/pinia";
-import Home from "./HomeContents/Todo.vue";
-
-const HomeRef = ref<InstanceType<typeof Home> | null>(null);
 
 const commonData = useCommonData();
 const logoutStore = useLogoutStore();

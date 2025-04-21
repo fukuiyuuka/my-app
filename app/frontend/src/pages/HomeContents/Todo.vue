@@ -203,7 +203,7 @@ function deleteSubtask(task: TaskGroup, subTask: Task) {
 }
 
 //タスク詳細表示(行クリック)
-function onTaskClick(event: MouseEvent, row: any) {
+function onTaskClick(_event: MouseEvent, row: any) {
   compEditTaskDetail(); //もし編集途中の場合は保存する。
   taskDetail.value.isEdit = false;
   taskDetail.value.title = row.item.name;
@@ -347,12 +347,12 @@ const saveData = async () => {
 };
 
 //ウィンドウorタブが閉じる時自動セーブ
-window.addEventListener("beforeunload", (event) => {
+window.addEventListener("beforeunload", (_event) => {
   saveData(); //非同期
 });
 
 ///ページ遷移前自動セーブ
-onBeforeRouteLeave((to, from, next) => {
+onBeforeRouteLeave((_to, _from, next) => {
   //ログアウト（commonData.user=null）時は、beforeLogoutでセーブ
   if (commonData.user) saveData(); //非同期
   next(); //ページを離れる

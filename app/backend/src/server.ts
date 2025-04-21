@@ -22,12 +22,20 @@ app.use(express.json()); //リクエストをJSONで受け取る
 //フロントサーバのオリジンのみクロスオリジン通信を許可
 app.use(
   cors({
-    origin: "http://localhost:5173", //許可するオリジン
+    origin: process.env.FRONT_ORIGIN, //許可するオリジン
     credentials: true, //Cookie付きの通信を許容するか
   })
 );
 
-const redisClient = createClient();
+const redisClient = createClient({
+  socket: {
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    tls: true, // UpstashはTLS必須
+    //tls: false, //開発環境はfalse
+  },
+  password: process.env.REDIS_PASSWORD,
+});
 redisClient.connect(); //Radis(インメモリDB)と接続
 const store = new RedisStore({ client: redisClient }); //セッションストア生成
 

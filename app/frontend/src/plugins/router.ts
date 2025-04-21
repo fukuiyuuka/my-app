@@ -21,7 +21,7 @@ const router = createRouter({
 });
 
 //未ログイン状態で直接Home等に遷移しようとした場合、ログインページにリダイレクトする。
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const commonData = useCommonData();
 
   const isAuthenticated = !!commonData.user;

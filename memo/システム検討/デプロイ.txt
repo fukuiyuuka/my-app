@@ -1,0 +1,30 @@
+■以下は完了している前提
+・githubアカウント・リポジトリ作成
+・githubにアップロード
+・Render登録（githubと連携）
+・Upstash登録（githubと連携）
+
+■DBサーバ
+    ・RenderでPostgreSQL作成
+    ・後でバックエンドサーバでURLを設定し、マイグレーションもさせる。
+
+■Redisサーバ
+    ・UpstashでRedisサーバ作成
+
+■バックエンドサーバ
+    ・RenderでWeb Service作成
+        ・RunTime：Node.js
+        ・Start Command：　npx prisma generate && npx prisma migrate deploy && npx ts-node src/server.ts
+        ・環境変数 
+            ・DATABASE_URL
+            ・REDIS_HOST
+            ・REDIS_PORT
+            ・REDIS_PASSWORD
+            ・FRONT_ORIGIN
+
+■フロントサーバ
+    ・RenderでStatic Site作成
+        ・Build Command： vite build
+        ・Publish Directory: dist
+        ・環境変数
+            ・VITE_API_URL: バックエンドサーバのURL

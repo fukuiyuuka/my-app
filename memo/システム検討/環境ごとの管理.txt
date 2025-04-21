@@ -1,0 +1,19 @@
+1. .env ファイルを使う（ローカル用）
+ファイル名例：.env.local
+
+env
+コピーする
+編集する
+VITE_API_URL=http://localhost:3000/api
+注意: Vite では VITE_ で始まる名前しか使えないことに注意！
+
+2. コードから環境変数を使う
+ts
+コピーする
+編集する
+const apiUrl = import.meta.env.VITE_API_URL;
+3. .gitignore に .env* を追加しておく
+gitignore
+コピーする
+編集する
+.env*

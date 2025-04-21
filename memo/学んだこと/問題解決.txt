@@ -1,0 +1,36 @@
+・何か問題にあったときの汎用的な対処法
+	・chatGPTは基本似たような回答しかしないので、一回聞いてだめだったら外のサイトなど調べてみよう。
+	・色々な角度から調べてみよう。少し気分転換したりすると、戻ったら良いアイデアが思い浮かんですぐ解決できたりするかも。
+
+・node_moduleにあるパッケージがインポートできない
+	→tsconfig.jsonに「"moduleResolution": "node",」を付けたしたら読み込まれた。これが何なのかはよくわからない。
+	→モジュールの読み込み方を指定しているらしい。
+
+・パッケージのインポートまでは正常にできたが、実行時にモジュールがないとエラーになる。
+	→パッケージのtsconfig.jsonの「"module": "ESModule"」を「"module": "CommonJS"」に修正（実行時のmoduleと合わせる）
+
+・prismaで型推論がきかない
+	→npx prisma generateでprisma clientを作る必要がある。
+	→開発環境のmigration（npx prisma migrate dev）でもクライアントが作成される。
+
+・サーバがリクエストを受け取るが、APIまで届かない
+	→ユーザ定義のミドルウェアがある場合、最後にnext()を呼び出していないと、次のミドルウェア(app.use)に渡らない、。
+
+・redisをnode.jsにインストールしたが、redisclient.connect()したところ、失敗した。
+	→node.jsにインストールしたredisは、redisと接続するためだけのもので、redisはまた別にインストールする必要がある。
+	→https://github.com/MicrosoftArchive/redis/releases
+
+・redisをインストールしてC:\Program Files\Redis\redis-server.exeを実行したらエラーになった。
+	→よくわからないが、以下で解決（https://stackoverflow.com/questions/31769097/cant-bind-tcp-listener-6379-using-redis-on-windows）
+	１．redis-cli.exe
+	２．shutdown
+	３．exit
+	４．再度cmdを立ち上げて、redis-server.exe
+
+・npx prisma generateでエラー（.tmpファイルのrename失敗）
+	→backendのserver.tsが実行されたままだと、変更がロックされていて失敗してしまうようだ。サーバを落としてから実行すること。
+	→この状態だと、zodでの型生成は問題なく生成されるが、prismaClientの内部の型が変わらないままになってしまう。
+
+・piniaで、persist = trueにして永続化したが、localStorageに保存されない。
+	→初期値(defineStoreのstateの戻り値)が空オブジェクトだと、localStorageに反映されない。
+	→nullにするなどして対応すること。

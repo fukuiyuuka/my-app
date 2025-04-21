@@ -1,0 +1,66 @@
+■手順
+
+・nodeプロジェクト作成　npm init
+
+・package.json作成
+{
+    "name": "@yukafukui/shared-type",
+    "version": "0.0.0",
+    "description": "プロジェクト間の型共有",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "publish-patch": "npm install && npm run build && npm login && npm version patch && npm publish --access public",
+        "publish-minor": "npm install && npm run build && npm login && npm version minor && npm publish --access public",
+        "publish-major": "npm install && npm run build && npm login && npm version major && npm publish --access public"
+    },
+    "license": "MIT",
+    "private": false
+}
+
+・tsconfig.json作成
+{
+    "compilerOptions": {
+      "target": "ES2020",
+      "module": "CommonJS",
+      "declaration": true,
+      "outDir": "dist",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "moduleResolution": "node"
+    },
+    "include": ["src"]
+}
+
+・srcフォルダにindex.ts作成。index.tsで公開したいものをエクスポート。
+
+・公開
+npm install 
+npm run build
+npm login
+npm version patch
+npm publish --access public //publicにしないと無料で公開できない
+
+上記の通りpackage.jsonを作れば
+	・パッチ公開→npm run publish-patch //バグなどの小修整
+	・マイナー公開→npm run publish-minor //新機能追加
+	・メジャー公開→npm run publish-major //後方互換性なし
+ログイン情報は求められるので入力すること。
+
+・公開にはnpmユーザが必要
+ユーザ作成：https://www.npmjs.com/signup
+
+
+■問題解決
+大体tsconfig.jsonに問題があった。（chatgptで生成したのが良くなかった。サイト見ながらtscのほうで初期化すべきだった。）
+
+・node_moduleにあるパッケージがインポートできない
+	→tsconfig.jsonに「"moduleResolution": "node",」を付けたしたら読み込まれた。これが何なのかはよくわからない。
+
+・パッケージのインポートまでは正常にできたが、実行時にモジュールがないとエラーになる。
+	→パッケージのtsconfig.jsonの「"module": "ESModule"」を「"module": "CommonJS"」に修正（実行時のmoduleと合わせる）

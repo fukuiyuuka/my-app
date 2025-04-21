@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "SubTask" ALTER COLUMN "due" SET DATA TYPE TEXT;
+
+-- AlterTable
+ALTER TABLE "Task" ALTER COLUMN "due" SET DATA TYPE TEXT;

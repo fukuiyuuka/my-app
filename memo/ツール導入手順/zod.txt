@@ -1,0 +1,38 @@
+■zodの使い方基本
+・zod：定義型の型チェック自動生成
+
+import { z } from "zod";
+
+//バリデーション用オブジェクトの生成
+export const CreateUserReqSchema = z.object({
+    name: z.string(),
+    hashedPassword: z.string()
+});
+
+//バリデーション用オブジェクトから型を生成
+export type CreateUserReq = z.infer<typeof CreateUserReqSchema>;
+
+//バリデーション
+if(!t.CreateUserReqSchema.safeParse(reqBody)){
+	throw new Error("入力型エラー");
+}
+
+■zod-prisma-types導入
+・zodをprismaとうまく連携させるもの。
+・Prismaの型を普通の型に変換してフロントと共有できるようにする。（modelschema）
+
+・導入
+	・npm install zod zod-prisma-types
+	・schema.prismaに以下を追加（オプションは一例）
+		generator zod {
+  			provider = "zod-prisma-types"
+ 			useMultipleFiles = true　
+  			createModelTypes = true
+  			createInputTypes  = false
+  			output = "../src/controllers/shared-type/zodSchema"
+		}
+	・npx prisma generate
+		・outputで指定したファイルに以下のファイルが生成
+			・inputTypeSchemas：DB操作時のzod型
+			・modelSchema：Prismaとは切り離されたテーブル型としてのzod型
+			・outputTypeSchemas：DB戻り値のzod型

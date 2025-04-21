@@ -1,0 +1,28 @@
+vue-router：SPAにおけるページ遷移
+
+１．npm install vue-router
+
+２．ルーティング専用スクリプト（src/plugins/vuetify.ts）を作成し、ルーティング（パスとコンポーネントの対の配列）を指定。createRouterしてエクスポート。
+
+//router.ts
+import { createRouter, createWebHistory } from 'vue-router'
+import Login from '../pages/Login.vue'
+import Register from '../pages/Register.vue'
+
+const routes = [
+  { path: '/', component: Login },
+  { path: '/register', component: Register },
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+})
+
+export default router
+
+３．main.tsでrouterを設定。　
+import router from './plugins/router'
+app.use(router) //マウント前に
+
+４．App.vueで<router-view />と指定したところにパスに応じたページ内容が挿入される。

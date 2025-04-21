@@ -1,0 +1,33 @@
+・画面デザインはvuetifyを使用
+
+１．インストール　npm install vuetify@next
+
+２．関連パッケージのインストール　npm install sass sass-loader -D
+
+３．src/plugins/vuetify.tsを作成。createVuetifyしたものをエクスポート。
+
+//vuetify.ts
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+
+export default createVuetify({
+  components,
+  directives,
+})
+※import 'vuetify/styles'でエラーが出る場合、コンパイラが過剰に反応しているみたいなので、tsconfig.app.jsonの"noUncheckedSideEffectImports": trueを消すとエラー出なくなる。
+
+４．main.tsでvuetifyを設定。
+import vuetify from './plugins/vuetify'
+app.use(vuetify)
+
+５．vite.config.tsにも設定しないといけないみたい？（sass-loaderがあればいらなかったりするかも。よくわからん）
+以下をインストール
+
+npm install vite-plugin-vuetify --save-dev
+
+//vite.config.ts
+import vuetify from 'vite-plugin-vuetify'
+export default defineConfig({
+  plugins: [vue(), vuetify()],

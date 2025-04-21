@@ -1,0 +1,18 @@
+・vite：vue-cliに代わる、vueアプリのビルド・開発環境。
+
+・vueプロジェクト作成
+	・npm create vite@latest
+		・framework:Vue
+		・variant：typeScript
+	・以下で一発？
+		・npm create vite@latest my-vue-app -- --template vue-ts
+
+・viteがやってくれること
+	・主に以下の2つ
+		・npm run devで開発用サーバの起動
+		・npm run buildで本番用の静的ファイルを作成
+	・viteはあくまで開発用のサーバであり、開発が完了したらbuildして静的ファイルを生成し、その静的ファイルを配信するサーバはrender上などで作成する必要がある。
+
+※ローカルで静的ファイル配信を試してみたい場合は以下
+npm install -g serve
+serve dist

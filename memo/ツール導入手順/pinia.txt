@@ -1,0 +1,69 @@
+■piniaとは
+複数スクリプト間の値共有のためのツール（シングルトン）
+spaのページ間値共有に便利
+npm install pinia
+
+※注意
+リロードすると、Vueアプリが最初から読み込まれるので、Piniaストアも初期化される。
+これを防ぎたい場合は、pinia-plugin-persistedstateを使ってストアの値をブラウザのlocalStorageに保存するようにする。
+
+■使い方（初期設定）
+main.tsでuseする。
+
+import { createApp } from 'vue'
+import App from './App.vue'
+import { createPinia } from 'pinia';
+import piniaPersistedstate from 'pinia-plugin-persistedstate'
+
+const pinia = createPinia()
+pinia.use(piniaPersistedstate)
+
+const app = createApp(App)
+app.use(pinia)
+
+app.mount('#app')
+
+■使い方（ストア作成）
+
+import { defineStore } from 'pinia'
+
+export type User = {
+  id: Number,
+  name: String
+}
+
+export type CommonData = {
+  user: User | null
+}
+
+//第一引数commonDataはストアの識別子
+//stateにストアで保持したい型を設定。型は関数の戻り値の型（CommonData）で指定。戻り値のインスタンスには初期値を設定。
+//actionで、保持した値に対するインタフェースを提供。
+export const useCommonData = defineStore('commonData', {
+  //初期値が空のオブジェクトだと、persist: trueでもlocalStorageに保存されないので注意。
+  state: (): CommonData => ({
+    user: null
+  }),
+  actions: {
+    setUser(user: User) {
+      this.user = user;
+    },
+    getUser(): User | null{
+      return this.user;
+    }
+  },
+  persist: true // ブラウザのlocalStorageに保存したい場合はtrue
+})
+
+■使い方（ストアに対する操作）
+
+//インスタンス化を忘れず
+//シングルトンなので、何度呼び出しても同じインスタンスが返ってくる。
+const commonData = useCommonData();　
+import {useCommonData} from "../store/pinia"
+
+//ユーザ情報保存
+commonData.setUser({
+    id: resBody.data.user.id,
+    name: resBody.data.user.name
+});

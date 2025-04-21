@@ -1,0 +1,135 @@
+■prismaセットアップ
+	・npm install prisma @prisma/client
+	・npx prisma init
+	・prisma/schema.prismaにDB情報を記述
+		datasource db {
+  			provider = "postgresql"
+  			url      = env("DATABASE_URL") //.envに記述
+		}
+	・モデルを定義
+		・schema.prismaに記述（分割されたファイルを統合する機能はない）
+			model User {
+ 				id    Int    @id @default(autoincrement())
+  				name  String
+  				email String @unique
+			}
+	・prisma client作成
+		・prisma client = 「prisma オブジェクトを通じてDB操作ができる、型安全な TypeScript 向け ORM クライアント」
+		・npx prisma generate
+			・型推論できるようになる？（generator clientにoutputを変に指定していたらうまくいかなかった）
+      ・backendサーバを起動したままやるとエラーになるので、サーバを終了させてからgenerateする。
+	・データベース反映
+		・管理者として実行しないと失敗した
+		・npx prisma migrate dev（開発時）
+			・マイグレーションファイルを作成
+			・自動でDBにマイグレーションを適用
+			・Prisma Client も自動で再生成（generate）
+		・npx prisma migrate deploy（商用）
+			・作成済みのマイグレーションファイルを適用する。
+	・APIからDB操作
+		・PrismaClientから操作できる
+			import { PrismaClient } from '@prisma/client';
+			const prisma = new PrismaClient();
+
+■基本知識
+
+・テーブル定義例
+
+model Post {
+  id        Int     @id @default(autoincrement()) //@で制約を付与
+  title     String
+  content   String? //?をつけるとNullを許容
+  published Boolean @default(false)
+  author    User?   @relation(fields:  [authorId], references: [id])　//外部キーで結合して取得している感じ？
+  authorId  Int?
+  @@unique([authorId, title])
+  @@index(fields: [title, content], name: "main_index") //インデックスはよく理解できていない
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+  posts Post[]　//外部キーはこのように記述できる。繰り返し項目にもできる！？連関エンティティが自動生成されるのかな
+  role    Role     @default(USER)
+}	
+
+・全件取得
+const users = await prisma.user.findMany();
+
+・テーブル結合して取得
+const allUsers = await prisma.user.findMany({
+  include: { posts: true },
+})
+
+・条件指定して取得(１件)
+const user = await prisma.user.findUnique({
+  where: { id: 1 }
+});
+※ findUnique は @id や @unique のフィールドに対してしか使えません。
+
+・複数件
+const users = await prisma.user.findMany({
+  where: {
+    name: {
+      contains: "太郎"
+    }
+  }
+});
+
+・インサート
+複数のテーブルのデータをいっぺんにつくることもできる。
+const user = await prisma.user.create({
+  data: {
+    name: "Alice",
+    email: "alice@prisma.io",
+    posts: {
+      create: { title: "Join us for Prisma Day 2020" },
+    },
+  },
+})
+
+・更新
+const post = await prisma.post.update({
+  where: { id: 42 },
+  data: { published: true },
+})
+
+・削除
+const deletedUser = await prisma.user.delete({
+  where: { id: 1 }
+});
+
+・なければ作成、あれば更新
+const user = await prisma.user.upsert({
+  where: { email: "taro@example.com" },
+  update: { name: "新しい名前" },
+  create: {
+    name: "山田太郎",
+    email: "taro@example.com"
+  }
+});
+
+・トランザクション処理
+await prisma.$transaction(async (tx) => {
+  const user = await tx.user.create({
+    data: {
+      name: "花子",
+      email: "hanako@example.com",
+    },
+  });
+
+  await tx.post.create({
+    data: {
+      title: "花子の初投稿",
+      content: "こんにちは！",
+      authorId: user.id,
+    },
+  });
+});
+
+・直接クエリを打つ
+ロックしたい場合などはこうするしかない
+const existingUser = await tx.$queryRaw<t.User[]>`
+  SELECT * FROM "User" WHERE name = ${reqBody.name} FOR UPDATE
+`;

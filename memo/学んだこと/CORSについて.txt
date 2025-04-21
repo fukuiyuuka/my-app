@@ -1,0 +1,37 @@
+・クライアントWebアプリからリクエストを送ったら以下のエラーが発生。
+Access to XMLHttpRequest at 'http://localhost:3000/user' from origin 'http://localhost:5173' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+
+よく見るエラーで今までよくわかっていなかったけど、とうとう理解した（多分）
+
+・CORS policyとは？
+クロスオリジン通信を制限する。
+デフォルトでは、オリジンが異なるスクリプト間での通信は禁止されている。
+
+・オリジンとは？
+そのスクリプトが属する「スキーマ＋ホスト＋ポート番号」
+「どこに属しているか（出身地）」であり、「どこで実行されているか」ではない。
+スキーマ：プロトコル。http、httpsとか
+ホスト：サーバのホスト名。バックで動いているスクリプトのオリジンはバックエンドサーバだし、Webブラウザで動いているスクリプトのオリジンはフロントエンドサーバ。
+ポート番号：ホスト内のアプリケーション識別子。
+どれか1つでも違えば、ことなるオリジンとみなされる。
+
+・なぜCORS policyが必要？
+ブラウザに保存された認証情報（Cookieなど）を使った、悪意あるサイトからのアクセスをブロックするため。
+Cookie自体も、 Same-Origin Policyによって守られてはいるが、完全に隠せるわけではないため、
+CORS policyも使って2重に防御している。
+
+・特定のオリジンからの通信を許可するには？
+
+expressの場合、corsというミドルウェアを使うことで以下のように記述できる。
+app.use(cors({
+  origin: 'https://frontend.example.com', //許可するオリジン
+  credentials: true //Cookie付きの通信を許容するか
+}));
+
+これを使用すると、許可するオリジンからのリクエストの場合、httpレスポンスのヘッダに以下の情報が付加される
+Access-Control-Allow-Origin: https://frontend.example.com
+Access-Control-Allow-Credentials: true
+
+逆に、許可していないオリジンへのレスポンスには上記の情報がない。
+
+ブラウザはこれらの情報を確認し、もし上記の情報が付加されていなければ、スクリプトからレスポンスの中身が見れないように制限する。

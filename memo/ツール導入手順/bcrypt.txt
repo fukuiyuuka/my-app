@@ -1,0 +1,17 @@
+・bycrypt：ハッシュ化（不可逆暗号化）パッケージ
+・bycryptではなく、bycryptjsを使用（フロントでビルド時エラーとなった。バックもこれに合わせる・）
+
+・使い方
+
+import bcrypt from 'bcryptjs'
+const SALT_ROUNDS = 10 // 推奨：10〜12
+const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS)
+//照合
+const isMatch = await bcrypt.compare(plainPassword, user?.password || '')
+
+・注意
+ユーザ登録時→ハッシュ化して送信。ハッシュ化したものをDB登録。
+ユーザ照合時→生のパスワードを送信。compareで送信された生のパスワードと、DBのハッシュ化したパスワードを照合する。
+
+一見、ハッシュ化してから送ったほうが良いと思ってしまうが、当然ながら同じ値でもハッシュ化するたびに異なる値となる。
+ハッシュ化してしまうと登録時のハッシュ値と変わってしまうため、照合できない。

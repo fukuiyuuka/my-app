@@ -1,0 +1,45 @@
+■インストール
+インストーラでインストール後、自動でパスが通っていなかったので手動で通した。
+コマンドプロンプトであれば、パスを通した後再起動すること。
+
+■CLIからの操作。DB作成まで
+
+・スーパユーザとしてログイン
+C:\Users\fkyk1>psql -U postgres
+スーパユーザパスワード入力（インストール時に設定）
+
+・prismaでマイグレーションしたいデータベースを作成する。
+postgres=# create database question_app_db;
+
+・データベースができていることを確認（DB一覧出力）
+\l
+
+※postgresのサーバはデフォルトで起動している。起動を確認する場合は以下のいずれか
+	・netstat -aon | findstr :5432　//listening状態のプロセスがあればOK
+	・windowsの「サービス」アプリで確認（停止もここから簡単にできそう）
+	・「psql -U postgres」で接続できるか
+
+・データベース内でデータ操作したいとき
+	・postgresでは、接続時にDB名を指定する。
+		・psql -U postgres -d db_name
+	・以下で変更することも可能
+		・\c db_name
+	・CLIでコマンド待ち受けが「db_name=#」と目的のDB名になっていたらOK
+
+■postgres cli 基本操作
+
+\dt	テーブル一覧
+\d table	テーブルの定義（カラムなど）を見る
+\d+ table	テーブルの詳細＋サイズ情報など
+\l	データベース一覧
+\du	ユーザー一覧（ロール）
+
+■注意点
+
+・大文字を含むテーブル名
+prismaでテーブルを作成すると「User」といった大文字を含む名前で作成される。
+大文字を名前に含むテーブルに、そのまま「\d User」としてもアクセスできない。「\d "User"」というようにクォーテーションで囲んだらアクセスできた。
+
+・ローカルホストでpostgresqlを起動し、データベースquestion_app_dbにスーパユーザでアクセスするURLは以下となる。
+DATABASE_URL="postgresql://postgres:yuuka0828@localhost:5432/question_app_db"
+

@@ -1,0 +1,152 @@
+■基礎構成
+webアプリケーションは簡潔に言うと...ブラウザ上でデータを操作できるもの
+ブラウザ上にUIがあって、そのUIを操作するとDBのデータを操作できる。
+つまりwebアプリケーションはでは主に以下の2つを作る必要がある。
+	・ブラウザ上のUI（フロントエンド）
+	・UIの操作をトリガーとして動くデータ操作処理（バックエンド）
+
+・webアプリケーションには3つのサーバが必要
+	・フロントエンド用サーバ
+		・renderのstatic siteで配信。
+		・viteでフロント用コンテンツをビルドする。
+	・バックエンド用サーバ
+		・renderのweb serviceでnodejsを動かす。
+	・DB用サーバ
+		・これもrender上で作成する。
+
+処理の流れとしては
+１．urlにアクセスするとフロントエンドサーバから静的ファイルが配信
+２．静的ファイルを受け取ったクライアントはクライアントアプリケーションを起動
+２．クライアントアプリケーションからリクエストが来たら、バックエンド側のサーバが処理
+３．バックエンド側のAPIでDBサーバにアクセスして、データ更新
+
+■現状の環境
+nodejsインストール済み
+
+以下はグローバルインストール済み。
+バージョンを厳密に管理するため、ローカルで上書きすることにする。
+PS C:\work\JobHunt\portfolio\repo\question\app> npm list -g --depth=0
+C:\Users\fkyk1\AppData\Roaming\npm
+├── @vue/cli@5.0.8
+├── ts-node@10.9.1
+└── typescript@4.9.5
+
+■プロジェクト作成（大元）
+
+１．ルートフォルダの作成
+２．ルートフォルダ上でnpm init	→package.jsonが作成される
+	
+３．バック・フロント共通で使うパッケージはここでインストール
+
+npm install typescript --save-dev（typescriptコンパイラ。ts→js）
+※"--save-dev"を指定すると開発用パッケージとして認識され、実行環境で不必要にインストールされなくなる。"-D"でも同じ。
+
+npm install ts-node --save-dev　（nodejsでtsファイル実行すると自動でtscしてくれる）
+
+４．backend、frontend　フォルダ作成
+
+■バックエンド構成（backendフォルダ内）
+
+・以下のフォルダ構成
+	・api：機能の最小単位。通信と関係しない部分。DB操作。controllerから大きな処理や、汎用的な処理を抜き出す感じ。
+	・controllers：各リクエストに対する処理を記述。通信（リクエスト・レスポンス）に関係する処理。API呼び出し。
+	・routes：リクエストとcontrollerの紐づけ
+	・models：データ構造管理。prismaを使ってpostgreSQLと紐づける予定。
+	・server.ts：エントリポイント。リクエストを受け取り、routesに渡す。
+	※mvcモデルというものらしい
+
+・リクエスト処理のながれ
+リクエスト→server.ts→routes→controllers→api
+
+・DB：prismaとpostgresql
+
+・HTTP通信：Express
+
+■フロントエンド構成（frontendフォルダ内）
+
+・導入ツール
+	・SPA（Single Page Application）：Vueを使用
+		・1つのhtmlだけ読み込み、あとはそのhtmlを色々いじってアプリ内のページ遷移や描画を実現する。
+		・Vueプロジェクト1つだけで作ればそうなるんじゃないかな。
+		・⇔MPA（Multi Page Application）…ページごとにHTMLファイルを作る。
+
+	・ビルド環境：Vite
+
+	・状態管理（ページ間での値の共有）にはpiniaを使用する予定
+		・cookie以外で共有できる方法あったのか…
+		・cookieはブラウザを閉じても残るが、piniaは残らないので、別物ではある。
+		・認証情報はcookieで管理するのが一般的らしい。
+
+	・ページ遷移：vue-routerを使用
+
+	・画面デザイン：vuetifyを使用
+
+
+・以下のフォルダ構成（srcの中）
+	・components：画面（+処理）の最小単位
+	・pages：各urlに対応する画面（+処理）
+	・plugins：main.tsでuseするプラグイン（プロジェクトの拡張機能的な感じ。routerとかvuetifyとか。）
+	・store：状態管理用。piniaで実現予定。
+	・App.vue：vueアプリ。main.tsでimdex.htmlに埋め込まれる。
+	・main.ts：index.htmlで読み込まれる。フロントエンドアプリのエントリポイント。
+	・index.html：エントリポイント
+
+・フロントエンドの動き（ざっくり）
+	１．urlへのアクセス（フロントエンドサーバへのリクエスト）
+	２．諸々の静的ファイルがクライアントに送信される。
+	３．ブラウザでは、まずindex.htmlが読み込まれる。
+	４．index.htmlで読み込んでいるmain.ts（フロントエンドアプリ）が実行される。
+	５．main.tsでは、vueアプリをインスタンス化し、htmlファイルに埋め込み（マウント）を行う。
+	６．main.tsでプラグインとしてrouterを使っている場合は、urlに応じて表示するコンポーネントの切り替えも行う。
+
+・開発環境起動方法
+	・npm install
+	・npm run dev（中身はvite）
+
+■使用パッケージ一覧
+
+・共通
+	・ts-node（dev）…tsファイルを自動でtscしてjsファイルにしてくれる
+	・typescript（dev）…typescriptコンパイラ（tsc）
+・フロント
+	・vite…フロントエンド配信ファイルのビルドツール。開発サーバも起動可能。
+	（これはデフォルトで使用できた？よくわからんが、npm create viteしたら何かがインストールされた気はする）
+	・vue-router…フロントアプリのページ遷移を簡単に記述できる。
+	・vuetify@next…画面デザイン用。
+		・sass（dev）…sass（cssを使いやすく拡張したもの）をcssに変換するツール。
+		・sass-loader（dev）…viteなどのビルドツールで自動でsassをコンパイルしてcssに変換してくれる。
+	・axios…フロント側のhttp通信
+	・bcrypt…ハッシュ化（不可逆な暗号化）→bycryptjsにした。
+		・@types/bcrypt（dev）
+・バック
+	・express…http通信
+		・@types/node（dev）
+		・@types/express（dev）
+	・prisma…DB連携
+		・@prisma/client
+	・bcrypt…ハッシュ化（不可逆な暗号化）
+		・@types/bcrypt（dev）
+	・io-ts…型ガード（ユーザ定義型チェック）自動生成ライブラリ→zodのほうがprismaと相性が良いため、削除
+	・zod-prisma-types…prisma clientからzodスキーマ（バリデーション用の型）を生成し、バリデーション機能を提供。
+		・zod…io-tsの代わりに使用。
+	・cors…expressのミドルウェアとして使用。。オリジン（プロトコル名＋ホスト名＋ポート番号）が異なる同士の通信はブラウザ上でデフォルト禁止されているので、このライブラリを使って目的のオリジンを許可する。
+		・@types/cors（dev）
+	・express-session…セッション生成
+		・@types/express-session（dev）
+	・redis…インメモリ辞書型DB
+	・ioredis…インストールしたけど使ってない。redisだけでできそう
+	・connect-redis…radisとexpress-session連携
+		・使い方：https://www.npmjs.com/package/connect-redis
+	・pinia…ページ間値共有
+	・pinia-plugin-persistedstate…piniaの値をlocalStorageに保存する。
+
+■vscode
+
+・フォーマッタ
+下記を拡張子（.ts,.vue）ごとに設定。（目的の拡張子ファイルをアクティブにした状態で）
+
+１．ない場合：vscodeにPrettier拡張をインストール
+２．Ctrl+Shift+P / Cmd+Shift+P を押して、コマンドパレットを開く
+３．「Format Document With...」と入力して選択
+４．「Configure Default Formatter」を選ぶ
+５．esbenp.prettier-vscode（Prettier） を選択

@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator zod {
+  provider         = "zod-prisma-types"
+  useMultipleFiles = true
+  createModelTypes = true
+  createInputTypes = false
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//ファイルは分割不可能（ビルド時にcatで繋げるぐらいしか方法はない）
+
+model User {
+  //主キー
+  id Int @id @default(autoincrement())
+
+  //非キー属性
+  name     String @unique //一意性制約
+  password String //ハッシュ化必須
+
+  //被参照
+  TaskList Task[] //参照されている場合はリストを持たせる必要がある。
+}
+
+model Task {
+  //主キー
+  userId Int //Userの主キーを保持
+  taskId Int //フロント側で採番する。
+
+  //参照制約
+  //fields: Task側
+  //references: User側（被参照表）
+  user User @relation(fields: [userId], references: [id])
+
+  //非キー属性
+  name    String
+  details String
+  due     String
+  done    Boolean
+
+  //被参照
+  subTaskList SubTask[]
+
+  @@id([userId, taskId]) //複合キー
+}
+
+model SubTask {
+  //主キー
+  userId    Int
+  taskId    Int
+  subTaskId Int //フロント側で採番する。
+
+  //参照制約
+  //onDelete: Cascade…親が削除されたら子も削除される。
+  task Task @relation(fields: [userId, taskId], references: [userId, taskId], onDelete: Cascade)
+
+  //非キー属性
+  name    String
+  details String
+  due     String
+  done    Boolean
+
+  @@id([userId, taskId, subTaskId])
+}

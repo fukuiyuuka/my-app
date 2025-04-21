@@ -1,0 +1,84 @@
+■セットアップ
+
+・GitHubアカウント作成、ログイン
+
+・GitHub上にリポジトリ作成 portfilio
+
+・Gitをインストール　インストーラを起動し設定値変更せずインストール
+
+・Git Bashでユーザ情報設定
+git config --global user.name name
+git config --global user.email email
+git config --list
+
+■リモートへのプッシュまで
+
+・ローカルリポジトリ作成
+cd /c/work/JobHunt/portfolio/repo
+mkdir sample
+cd sample
+git init
+
+・index.html作成（中身適当）
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+ 
+<body>
+    Hello World！
+</body>
+</html>
+
+・ローカルリポジトリへのコミット
+git add index.html
+git commit -m "Add index.html"
+
+・リモートリポジトリとの紐づけ
+git remote add origin https://github.com/fukuiyuuka/sample.git
+
+・リモートリポジトリへのプッシュ
+git push origin master
+ポップアップが出てくるので、認証したら完了。
+
+■ブランチ操作
+
+・ローカルでのブランチ作成
+git branch sub1
+git branch
+
+・ブランチの移動
+git checkout sub1
+git branch
+
+・ブランチにプッシュ
+git add index2.html
+git commit -m "[Add] index2"
+
+・リモートへの反映
+git push origin sub1
+
+・ブランチをmasterにマージ
+git checkout master
+git merge sub1
+git push origin master
+
+・ブランチの削除（ローカル）
+git branch -d sub1
+git branch
+
+・ブランチの削除（リモート）
+git push --delete origin sub1
+
+■その他
+
+・vim画面の抜け方
+Escキー押す→「:wq」を入力→Enter
+
+
+
+
+
+

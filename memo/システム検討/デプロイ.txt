@@ -14,7 +14,8 @@
 ■バックエンドサーバ
     ・RenderでWeb Service作成
         ・RunTime：Node.js
-        ・Start Command：　npx prisma generate && npx prisma migrate deploy && npx ts-node src/server.ts
+        ・Build Command：npm install && npx prisma generate && npx prisma migrate deploy && npx ts-node src/server.ts
+        ・Start Command：npx ts-node src/server.ts
         ・環境変数 
             ・DATABASE_URL
             ・REDIS_HOST
@@ -24,7 +25,9 @@
 
 ■フロントサーバ
     ・RenderでStatic Site作成
-        ・Build Command： vite build
+        ・Build Command： npm run build
         ・Publish Directory: dist
-        ・環境変数
+        ・環境変数…Web Serviceのように指定はできないので、ファイルで分ける。
             ・VITE_API_URL: バックエンドサーバのURL
+                ・.env.local：ローカル実行時のURLを記載。npm run dev(vite)実行時に読み込まれる。gitアップロード不要。
+                ・.env.production：本番実行時のURLを記載。npm run build(vite build)実行時に読み込まれる。gitアップロードが必要。

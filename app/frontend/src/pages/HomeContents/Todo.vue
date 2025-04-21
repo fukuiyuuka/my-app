@@ -371,9 +371,9 @@ onMounted(async () => {
   loading.value = true;
   try {
     await getData();
-    autoSaveTimer = setInterval(() => {
-      saveData();
-    }, 30000);
+    // autoSaveTimer = setInterval(() => {
+    //   saveData();
+    // }, 30000);
   } catch (e: any) {
     console.error(e);
     console.error(`onMounted failed: ${e.message || ""}`);

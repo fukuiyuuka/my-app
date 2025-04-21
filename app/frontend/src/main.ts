@@ -15,3 +15,4 @@ app.use(router);
 app.use(vuetify);
 
 app.mount("#app");
+console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);

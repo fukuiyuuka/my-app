@@ -31,7 +31,7 @@ const redisClient = createClient({
   socket: {
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
-    tls: true, // UpstashはTLS必須
+    tls: process.env.NODE_ENV === "production", // UpstashはTLS必須
     //tls: false, //開発環境はfalse
   },
   password: process.env.REDIS_PASSWORD,
@@ -51,8 +51,7 @@ app.use(
     store: store,
     cookie: {
       httpOnly: true, //スクリプトからの値の読み取り不可
-      //secure: true, //HTTPS通信でのみ送信可能
-      secure: false, //開発中はfalse
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict", //他サイトのリクエストに付加しない。
     },
   })

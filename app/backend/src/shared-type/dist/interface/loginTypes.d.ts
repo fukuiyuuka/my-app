@@ -28,6 +28,7 @@ export declare const PostLoginResSchema: z.ZodObject<{
             name: string;
             password: string;
         }>>;
+        token: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         user?: {
             id: number;
@@ -35,6 +36,7 @@ export declare const PostLoginResSchema: z.ZodObject<{
             password: string;
         } | undefined;
         successLogin?: boolean | undefined;
+        token?: string | undefined;
     }, {
         user?: {
             id: number;
@@ -42,6 +44,7 @@ export declare const PostLoginResSchema: z.ZodObject<{
             password: string;
         } | undefined;
         successLogin?: boolean | undefined;
+        token?: string | undefined;
     }>>;
 }, "strip", z.ZodTypeAny, {
     code: number;
@@ -53,6 +56,7 @@ export declare const PostLoginResSchema: z.ZodObject<{
             password: string;
         } | undefined;
         successLogin?: boolean | undefined;
+        token?: string | undefined;
     } | undefined;
 }, {
     code: number;
@@ -64,6 +68,7 @@ export declare const PostLoginResSchema: z.ZodObject<{
             password: string;
         } | undefined;
         successLogin?: boolean | undefined;
+        token?: string | undefined;
     } | undefined;
 }>;
 export type PostLoginRes = z.infer<typeof PostLoginResSchema>;

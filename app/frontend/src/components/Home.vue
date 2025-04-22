@@ -1,26 +1,24 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { api, logout } from "./common";
-import { useCommonData, useLogoutStore } from "../store/pinia";
+import { logout } from "../plugins/common";
+import { useLogoutStore } from "../plugins/pinia";
 
-const commonData = useCommonData();
+const userName = ref("");
+
+const userString = localStorage.getItem("user");
+if (userString) {
+  const user = JSON.parse(userString);
+  userName.value = user.name;
+}
+
 const logoutStore = useLogoutStore();
-
-const userInfo = ref(`ユーザ: ${commonData.user?.name}`);
-
 async function clickLogout() {
   try {
     const ok = await logoutStore.requestLogout();
     if (!ok) {
       if (!confirm("データ保存に失敗しました。ログアウトしますか？")) return;
     }
-    const res = await api.post("/logout");
-    if (res.status === 200) {
-      //ログアウト完了
-      logout();
-    } else {
-      throw new Error("ログアウト失敗");
-    }
+    logout();
   } catch (e: any) {
     console.error(e);
     throw e;
@@ -32,15 +30,18 @@ async function clickLogout() {
   <v-container fluid>
     <v-navigation-drawer :width="200">
       <v-list-item class="ma-1">
-        <div class="pa-2">{{ userInfo }}</div>
-        <v-btn
-          variant="outlined"
-          size="small"
-          rounded="lg"
-          @click="clickLogout"
-        >
-          ログアウト
-        </v-btn>
+        <div class="pa-2">
+          ユーザ: {{ userName }}
+          <v-btn
+            variant="outlined"
+            size="small"
+            rounded="lg"
+            @click="clickLogout"
+            class="mt-2"
+          >
+            ログアウト
+          </v-btn>
+        </div>
       </v-list-item>
       <v-divider></v-divider>
       <v-list-item link title="Todo" to="/home/todo"></v-list-item>

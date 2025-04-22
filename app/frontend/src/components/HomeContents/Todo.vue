@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
-import { InputDate } from "./InputDate";
+import { onBeforeUnmount, onMounted, ref, computed } from "vue";
+import { InputDate } from "../../plugins/InputDate";
 import { onBeforeRouteLeave } from "vue-router";
 import * as t from "@yukafukui/shared-type";
-import { api, logout } from "../common";
-import { useCommonData, useLogoutStore } from "../../store/pinia";
-const commonData = useCommonData();
+import { api } from "../../plugins/common";
+import { useLogoutStore } from "../../plugins/pinia";
+
 const logoutStore = useLogoutStore();
 
 /**
@@ -45,8 +45,9 @@ type EditTaskDialog = {
  */
 
 const loading = ref(false);
-
+const saveError = ref(false);
 const taskList = ref<TaskGroup[]>([]);
+const savedData = ref("");
 const expanded = ref<number[]>([]);
 const expandAll = ref(false);
 const headers = [
@@ -240,17 +241,15 @@ function toggleAll() {
  * ============================================
  */
 
-let autoSaveTimer: ReturnType<typeof setInterval> | null = null;
-
-let savedData: string = "";
+function getUserId() {
+  const userString = localStorage.getItem("user");
+  if (!userString) return "";
+  return JSON.parse(userString).id;
+}
 //データ受信
 const getData = async () => {
-  const user = commonData.getUser();
-  if (!user) {
-    throw new Error("getData: ユーザ情報なし。取得失敗");
-  }
   const req: t.GetTaskReq = {
-    userId: user.id,
+    userId: getUserId(),
   };
   const res = await api.get("/task", {
     params: req,
@@ -258,12 +257,6 @@ const getData = async () => {
   });
 
   const resBody: t.GetTaskRes = res.data;
-
-  //セッション切れの場合はログイン画面に遷移
-  if (res.status === 401) {
-    logout();
-    throw new Error("要ログイン");
-  }
 
   if (res.status !== 200 || resBody.code !== 0 || !resBody.data) {
     throw new Error("getData: 通信エラー。取得失敗");
@@ -286,20 +279,16 @@ const getData = async () => {
       }),
     };
   });
-  savedData = JSON.stringify(taskList.value);
+  savedData.value = JSON.stringify(taskList.value);
 };
 
+const isChanged = computed(
+  () => savedData.value !== JSON.stringify(taskList.value)
+);
 //セーブ
 const saveData = async () => {
-  if (savedData === JSON.stringify(taskList.value)) {
-    console.log("saveData: 変更なし");
-    return;
-  }
-  const userId = commonData.getUser()?.id;
-  if (!userId) {
-    console.error("saveData: ユーザ情報なし。データ保存失敗。");
-    return;
-  }
+  if (!isChanged.value) return;
+  const userId = getUserId();
   const req: t.PostTaskReq = {
     userId: userId,
     taskList: taskList.value.map((task) => {
@@ -329,54 +318,49 @@ const saveData = async () => {
       withCredentials: true,
     });
 
-    //セッション切れの場合はログイン画面に遷移
-    if (res.status === 401) {
-      logout();
-      throw new Error("要ログイン");
-    }
     const resBody: t.CommonRes = res.data;
 
     if (res.status !== 200 || resBody.code !== 0) {
-      throw new Error("saveData: APIエラー。データ保存失敗。");
+      throw new Error();
     }
-    savedData = JSON.stringify(taskList.value);
+    savedData.value = JSON.stringify(taskList.value);
+    saveError.value = false;
   } catch (e: any) {
-    console.error(e.message || "saveData: 予期しないエラー。データ保存失敗。");
+    saveError.value = true;
+    console.error(`saveData: ${e.message || "データ保存失敗。"}`);
     throw e;
   }
 };
 
 //ウィンドウorタブが閉じる時自動セーブ
 window.addEventListener("beforeunload", (_event) => {
+  compEditTaskDetail(); //編集中の詳細は一旦タスクリストに保存
   saveData(); //非同期
 });
 
 ///ページ遷移前自動セーブ
 onBeforeRouteLeave((_to, _from, next) => {
-  //ログアウト（commonData.user=null）時は、beforeLogoutでセーブ
-  if (commonData.user) saveData(); //非同期
+  compEditTaskDetail(); //編集中の詳細は一旦タスクリストに保存
+  saveData(); //非同期
   next(); //ページを離れる
 });
 
 //ログアウト時処理
 const beforeLogout = async () => {
-  await saveData();
+  await saveData(); //待つ
   return true;
 };
 
+//
+let saveInterval: null | number;
+
 //ページ表示時
-//データ取得 & 定期自動保存処理開始
 onMounted(async () => {
+  saveInterval = setInterval(saveData, 10000); //10秒ごとに自動保存
   logoutStore.registerListener(beforeLogout); //ログアウト時処理の設定
   loading.value = true;
   try {
     await getData();
-    // autoSaveTimer = setInterval(() => {
-    //   saveData();
-    // }, 30000);
-  } catch (e: any) {
-    console.error(e);
-    console.error(`onMounted failed: ${e.message || ""}`);
   } finally {
     loading.value = false;
   }
@@ -384,8 +368,8 @@ onMounted(async () => {
 
 //ページ離脱時
 onBeforeUnmount(() => {
+  if (saveInterval) clearInterval(saveInterval); //自動保存停止
   logoutStore.unregisterListener(beforeLogout); //ログアウト時処理の解除
-  if (autoSaveTimer) clearInterval(autoSaveTimer); //定期自動保存処理終了
 });
 </script>
 
@@ -404,14 +388,29 @@ onBeforeUnmount(() => {
       ></v-progress-circular>
     </v-overlay>
     <!-- タスク追加ボタン -->
-    <v-btn
-      variant="outlined"
-      rounded="lg"
-      @click="openTaskDialog('新規タスク', addTaskGroup, null, null)"
-      class="ma-2"
-    >
-      タスク追加
-    </v-btn>
+    <v-row>
+      <v-col>
+        <v-btn
+          variant="outlined"
+          rounded="lg"
+          @click="openTaskDialog('新規タスク', addTaskGroup, null, null)"
+          class="ma-2"
+        >
+          タスク追加
+        </v-btn>
+      </v-col>
+      <v-col class="text-end mt-5">
+        <v-icon color="error" v-if="saveError">
+          <v-tooltip activator="parent" location="top">自動保存失敗</v-tooltip>
+          mdi-alert-circle-outline</v-icon
+        >
+        <v-icon color="success" v-else-if="!isChanged"
+          >mdi-check-circle-outline</v-icon
+        >
+        <v-icon class="mdi-spin" v-else>mdi-loading</v-icon>
+      </v-col>
+      <v-col> </v-col>
+    </v-row>
 
     <!-- タスク追加・編集ダイアログ -->
     <v-dialog v-model="editTaskDialog.show" max-width="600">

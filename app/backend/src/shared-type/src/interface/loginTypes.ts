@@ -13,6 +13,7 @@ export type PostLoginReq = z.infer<typeof PostLoginReqSchema>;
 const PostLoginResDataSchema = z.object({
   successLogin: z.boolean().optional(),
   user: UserSchema.optional(),
+  token: z.string().optional(),
 });
 export const PostLoginResSchema = createResSchema(PostLoginResDataSchema);
 export type PostLoginRes = z.infer<typeof PostLoginResSchema>;

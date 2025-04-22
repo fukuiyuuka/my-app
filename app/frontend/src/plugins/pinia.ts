@@ -1,32 +1,8 @@
 import { defineStore } from "pinia";
 
-export type User = {
-  id: number;
-  name: string;
-};
-
-export type CommonData = {
-  user: User | null;
-};
-
-export const useCommonData = defineStore("commonData", {
-  //初期値が空のオブジェクトだと、persist: trueでもlocalStorageに保存されないので注意。
-  state: (): CommonData => ({
-    user: null,
-  }),
-  actions: {
-    setUser(user: User) {
-      this.user = user;
-    },
-    getUser(): User | null {
-      return this.user;
-    },
-  },
-  persist: true,
-});
-
 //ログアウト用
 export const useLogoutStore = defineStore("logout", {
+  //初期値が空のオブジェクトだと、persist: trueでもlocalStorageに保存されないので注意。
   state: () => ({
     listeners: new Set<() => Promise<boolean>>(),
   }),

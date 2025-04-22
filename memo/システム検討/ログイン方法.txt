@@ -13,8 +13,8 @@
 ・トークン認証
 	・ユーザーがログイン情報を送信
 	・サーバーで認証し、トークン（認証情報をいい感じにコンパクトにまとめたもの）を発行
-	・トークンをCookieに保存してブラウザへ送る（HttpOnly + Secure 推奨）
-	・クライアントは以後、リクエスト時にCookieを自動で送る
+	・トークンをAuthorizationヘッダに不可してブラウザへ送る
+	・クライアントは以後、リクエスト時にトークンも付加して送る。
 	・トークンは認証情報そのもの。代表的なトークン形式にJWTがある。
 		・JSON Web Token
 			・３つの要素をドットで繋げた構成
@@ -132,4 +132,73 @@
 			});
 	・検討：CSRF対策用トークン
 
+■実装方法の再検討
+・cookieを使った方式だと、クロスドメインの通信でどうしてもcookieが付加されず失敗してしまう。
+・express-sessionはcookieを使う前提のため、JWTを使ったトークン認証方式に変更する。
+
+	・JWTトークンの生成
+		・/loginでid & passを受け取り認証が成功したら、サーバ側でJWTトークンを生成し、レスポンスボディとして返す。
+		・npm install jsonwebtoken　…　JWTトークン生成用パッケージ
+		・サーバ側で認証成功したら、以下でJWTトークンを生成
+			const jwt = require("jsonwebtoken");
+			const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+			//DBと照合し、成功したらtokenを生成
+			const token = jwt.sign(
+				{ id: user.id, username: user.username },
+				 JWT_SECRET, 
+				{　expiresIn: '1h',}
+			);
+	
+	・JWTトークンの保存
+		・ログイン成功でJWTトークンを受け取ったら、localStorageに保存
+			const response = await axios.post(`${API_URL}login`, { username, password });
+			const token = response.data.token;
+			localStorage.setItem('token', token);
+	
+	・JWTトークンを使った認証
+		・リクエスト送信時、AuthorizationヘッダにlocalStorageに保存されたJWTトークンを付加
+			axios.interceptors.request.use((config) => {
+				const accessToken = localStorage.getItem("accessToken");
+					if (token) {
+						config.headers['Authorization'] = 'Bearer ' + token;
+					}
+					return config;
+				});
+
+		・サーバ側はAuthorizationヘッダで認証する。
+			app.use((req: Request, res: Response, next: NextFunction): void => {
+			//認証不要
+			if (["/login", "/user"].includes(req.path)) {
+				next();
+				return;
+			}
+
+			const authHeader = req.headers["authorization"];
+			if (!authHeader) {
+				res.sendStatus(401);
+				return;
+			}
+
+			const token = authHeader.split(" ")[1];
+			jwt.verify(token, process.env.JWT_SECRET!, (err, user) => {
+				if (err) return res.sendStatus(403);
+				(req as any).user = user;
+				next();
+			});
+			});
+		
+		・認証失敗したら（ステータスコード:401）、ログイン画面に戻す
+		myAxios.interceptors.response.use(
+			(response) => {
+				return response;
+			}, 
+			(error) => {
+			if (error.response.status === 401) {
+				alert("Your session has expired, please login again.");
+				localStorage.removeItem("accessToken");
+				router.push("/"); //ログイン画面へ
+			}
+				return Promise.reject(error);
+		});
 

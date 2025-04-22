@@ -2,9 +2,7 @@
 import { ref } from "vue";
 import * as t from "@yukafukui/shared-type";
 import router from "../plugins/router";
-import { api } from "./common";
-import { useCommonData } from "../store/pinia";
-const commonData = useCommonData();
+import { api } from "../plugins/common";
 
 const userName = ref("");
 const passWord = ref("");
@@ -30,17 +28,21 @@ async function clickLogin() {
       throw new Error("ログイン失敗");
     }
 
-    if (resBody.data?.successLogin && resBody.data?.user) {
+    if (
+      resBody.data?.successLogin &&
+      resBody.data?.user &&
+      resBody.data?.token
+    ) {
       //ログイン完了
-      //ユーザ情報保存
-      commonData.setUser({
-        id: resBody.data.user.id,
-        name: resBody.data.user.name,
-      });
+
+      //認証情報をlocakStorageに保存
+      localStorage.setItem("token", resBody.data.token);
+      localStorage.setItem("user", JSON.stringify(resBody.data.user));
+
       router.push("/home/todo");
     } else {
       //ログイン失敗
-      throw new Error("ユーザが存在しないか、パスワードが不一致");
+      throw new Error("ユーザが存在しないか、パスワードが不一致です");
     }
   } catch (e: any) {
     console.error(e);

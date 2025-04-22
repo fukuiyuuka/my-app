@@ -118,6 +118,10 @@ npm install ts-node --save-dev　（nodejsでtsファイル実行すると自動
 	・axios…フロント側のhttp通信
 	・bcrypt…ハッシュ化（不可逆な暗号化）→bycryptjsにした。
 		・@types/bcrypt（dev）
+	・lodash…セーブ機能実装に使えるユーティリティ。処理の回数を制限する（セーブしすぎないようにする）。
+		・@types/lodash
+	・pinia…ページ間値共有（dev）
+	・pinia-plugin-persistedstate…piniaの値をlocalStorageに保存する。
 ・バック
 	・express…http通信
 		・@types/node（dev）
@@ -131,14 +135,12 @@ npm install ts-node --save-dev　（nodejsでtsファイル実行すると自動
 		・zod…io-tsの代わりに使用。
 	・cors…expressのミドルウェアとして使用。。オリジン（プロトコル名＋ホスト名＋ポート番号）が異なる同士の通信はブラウザ上でデフォルト禁止されているので、このライブラリを使って目的のオリジンを許可する。
 		・@types/cors（dev）
-	・express-session…セッション生成
-		・@types/express-session（dev）
-	・redis…インメモリ辞書型DB
-	・ioredis…インストールしたけど使ってない。redisだけでできそう
-	・connect-redis…radisとexpress-session連携
+	・express-session…セッション生成→セッションログインを辞めたため不要。
+		・@types/express-session（dev）→セッションログインを辞めたため不要。
+	・redis…インメモリ辞書型DB→セッションログインを辞めたため不要。
+	・ioredis…インストールしたけど使ってない。redisだけでできそう→セッションログインを辞めたため不要。
+	・connect-redis…radisとexpress-session連携→セッションログインを辞めたため不要。
 		・使い方：https://www.npmjs.com/package/connect-redis
-	・pinia…ページ間値共有
-	・pinia-plugin-persistedstate…piniaの値をlocalStorageに保存する。
 
 ■vscode
 

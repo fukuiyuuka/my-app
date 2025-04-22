@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import * as t from "@yukafukui/shared-type";
-import { api } from "./common";
+import { api } from "../plugins/common";
 
 const userName = ref("");
 const passWord = ref("");

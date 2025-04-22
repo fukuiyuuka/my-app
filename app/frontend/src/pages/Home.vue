@@ -12,7 +12,7 @@ async function clickLogout() {
   try {
     const ok = await logoutStore.requestLogout();
     if (!ok) {
-      throw new Error("ログアウト準備失敗");
+      if (!confirm("データ保存に失敗しました。ログアウトしますか？")) return;
     }
     const res = await api.post("/logout");
     if (res.status === 200) {
@@ -23,7 +23,7 @@ async function clickLogout() {
     }
   } catch (e: any) {
     console.error(e);
-    alert(e.message || "ログアウト失敗");
+    throw e;
   }
 }
 </script>

@@ -36,7 +36,7 @@ export const postLogin = async (req: Request, res: Response) => {
           user: user,
         },
       };
-      req.session.logined = true; //セッションの状態を更新
+      req.session.logined = true; //セッションの状態を更新（値書き込みでsession（cookie）が発生）
       res.json(resBody);
       return;
     }

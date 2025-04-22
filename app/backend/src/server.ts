@@ -16,7 +16,7 @@ declare module "express-session" {
 }
 
 const app = express();
-app.set("trust proxy", true); //Render上などのクラウドサーバで実行する場合はこれが必要？
+app.set("trust proxy", 1); //Render上などのクラウドサーバで実行する場合はこれが必要？
 const PORT = 3000;
 app.use(express.json()); //リクエストをJSONで受け取る
 
@@ -54,6 +54,8 @@ app.use(
       httpOnly: true, //スクリプトからの値の読み取り不可
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
+      domain:
+        process.env.NODE_ENV === "production" ? "onrender.com" : undefined,
     },
   })
 );

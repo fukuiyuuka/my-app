@@ -40,7 +40,7 @@ async function clickLogin() {
       router.push("/home/todo");
     } else {
       //ログイン失敗
-      throw new Error("パスワード不一致");
+      throw new Error("ユーザが存在しないか、パスワードが不一致");
     }
   } catch (e: any) {
     console.error(e);

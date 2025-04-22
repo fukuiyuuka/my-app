@@ -52,7 +52,7 @@ app.use(
     cookie: {
       httpOnly: true, //スクリプトからの値の読み取り不可
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict", //他サイトのリクエストに付加しない。
+      sameSite: "none", //他サイトのリクエストに付加しない。
     },
   })
 );

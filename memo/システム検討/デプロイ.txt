@@ -1,6 +1,9 @@
 ■以下は完了している前提
 ・githubアカウント・リポジトリ作成
 ・githubにアップロード
+    ・backendは、ローカルでnpm run build(tsc)してdistもアップロードすること
+        ・production環境だとnpm installでdevdependenciesに入っているパッケージはインストールされないので、npm run build(tsc)でエラーになる。
+    ・frontendは、よくわからないがrender側でbuildしても問題なかった。（vue-tscが上手くやってくれている？）
 ・Render登録（githubと連携）
 ・Upstash登録（githubと連携）
 
@@ -14,11 +17,11 @@
 ■バックエンドサーバ
     ・RenderでWeb Service作成
         ・RunTime：Node.js
-        ・Build Command：npm install && npx prisma generate && npx prisma migrate deploy && npm run build
-            ※npm run build = tsc
-        ・Start Command：npm run server
-            ※npm run server = tsc
-        ・環境変数 node dist/server.js
+        ・Build Command：npm install && npx prisma generate && npx prisma migrate deploy
+            ・npm run build（tsc）はローカルで実施する。
+        ・Start Command：npm run start
+            ※npm run start = node dist/server.js
+        ・環境変数 
             ・DATABASE_URL
             ・REDIS_HOST
             ・REDIS_PORT

@@ -16,6 +16,7 @@ declare module "express-session" {
 }
 
 const app = express();
+app.set("trust proxy", true); //Render上などのクラウドサーバで実行する場合はこれが必要？
 const PORT = 3000;
 app.use(express.json()); //リクエストをJSONで受け取る
 

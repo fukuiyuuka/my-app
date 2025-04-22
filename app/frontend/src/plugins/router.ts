@@ -1,4 +1,7 @@
-import { createRouter, createWebHistory } from "vue-router";
+import {
+  createRouter,
+  /*createWebHistory*/ createWebHashHistory,
+} from "vue-router";
 import Login from "../pages/Login.vue";
 import Register from "../pages/Register.vue";
 import Home from "../pages/Home.vue";
@@ -16,7 +19,10 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  //createWebHistoryだと、直接URLを打ち込んだときにいい感じにリダイレクトしてくれなくなる
+  //サーバ側で設定が必要らしいので、一旦createWebHashHistoryに変更して試してみる。
+  //history: createWebHistory(),
+  history: createWebHashHistory(),
   routes,
 });
 

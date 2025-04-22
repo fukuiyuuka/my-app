@@ -52,10 +52,9 @@ app.use(
     store: store,
     cookie: {
       httpOnly: true, //スクリプトからの値の読み取り不可
-      secure: process.env.NODE_ENV === "production",
+      //secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "none",
-      domain:
-        process.env.NODE_ENV === "production" ? "onrender.com" : undefined,
     },
   })
 );
@@ -69,21 +68,21 @@ app.use((req, res, next) => {
   );
   console.log(`body = ${req.body ? JSON.stringify(req.body) : "なし"}`);
 
-  const originalJson = res.json.bind(res);
-  res.json = (body) => {
-    console.log("---レスポンス---");
-    console.log(`methoc = ${req.method}, path = ${req.path}`);
-    console.log("statusCode: 200");
-    console.log("body:", body);
-    return originalJson(body);
-  };
+  // const originalJson = res.json.bind(res);
+  // res.json = (body) => {
+  //   console.log("---レスポンス---");
+  //   console.log(`methoc = ${req.method}, path = ${req.path}`);
+  //   console.log("statusCode: 200");
+  //   console.log("body:", body);
+  //   return originalJson(body);
+  // };
 
-  const originalStatus = res.status.bind(res);
-  res.status = (code) => {
-    console.log("---レスポンス---");
-    console.log(`statusCode: ${code}`);
-    return originalStatus(code);
-  };
+  // const originalStatus = res.status.bind(res);
+  // res.status = (code) => {
+  //   console.log("---レスポンス---");
+  //   console.log(`statusCode: ${code}`);
+  //   return originalStatus(code);
+  // };
   next();
 });
 

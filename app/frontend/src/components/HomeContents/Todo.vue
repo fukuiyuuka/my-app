@@ -524,10 +524,12 @@ onBeforeUnmount(() => {
             :items="taskList"
             :items-per-page="-1"
             hide-default-footer
-            class="bordered-table"
+            class="fixed-table sticky_table"
             @click:row="onTaskClick"
             item-value="taskId"
             show-expand
+            height="70vh"
+            fixed-header
             :expanded.sync="expanded"
           >
             <!-- 展開ボタン列のヘッダー -->
@@ -601,7 +603,7 @@ onBeforeUnmount(() => {
                   :headers="subtaskHeaders"
                   :items="item.subTaskList"
                   hide-default-footer
-                  class="bordered-table thin-header"
+                  class="fixed-table no-header-table"
                   @click:row="onTaskClick"
                   :items-per-page="-1"
                 >
@@ -690,11 +692,10 @@ onBeforeUnmount(() => {
               v-model="taskDetail.editContent"
               variant="outlined"
               rows="20"
-              class="mutli-row"
             ></v-textarea>
           </div>
           <div v-else>
-            <div class="pa-6">{{ taskDetail.content }}</div>
+            <div class="pa-6 mutli-row">{{ taskDetail.content }}</div>
           </div>
         </v-sheet>
       </v-col>
@@ -703,24 +704,21 @@ onBeforeUnmount(() => {
 </template>
 
 <style>
-.bordered-table table {
+.fixed-table table {
   width: 100%;
   table-layout: fixed;
 }
 
-.bordered-table table,
-.bordered-table th,
-.bordered-table td {
+.fixed-table td {
   /* border: 1px solid #ccc;
-  border-collapse: collapse; */
+  border-collapse: collapse; カラム位置調整のための罫線*/
   white-space: nowrap;
-  overflow: hidden;
+  overflow: hidden; /**これはheaderにはつけないこと（ヘッダ固定が外れる） */
   text-overflow: ellipsis;
-  min-width: none;
 }
 
-.thin-header thead th,
-.thin-header thead th > * {
+.no-header-table thead th,
+.no-header-table thead th > * {
   height: 0 !important;
   min-height: 0 !important;
   line-height: 1 !important;

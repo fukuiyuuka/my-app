@@ -31,7 +31,6 @@ async function clickLogout() {
     <v-navigation-drawer :width="200">
       <v-list-item class="ma-1">
         <div class="pa-2">
-          ユーザ: {{ userName }}
           <v-btn
             variant="outlined"
             size="small"
@@ -40,7 +39,10 @@ async function clickLogout() {
             class="mt-2"
           >
             ログアウト
-          </v-btn>
+            <v-tooltip activator="parent" location="top"
+              >ユーザ名：{{ userName }}</v-tooltip
+            ></v-btn
+          >
         </div>
       </v-list-item>
       <v-divider></v-divider>

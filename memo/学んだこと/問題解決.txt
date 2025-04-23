@@ -34,3 +34,6 @@
 ・piniaで、persist = trueにして永続化したが、localStorageに保存されない。
 	→初期値(defineStoreのstateの戻り値)が空オブジェクトだと、localStorageに反映されない。
 	→nullにするなどして対応すること。
+
+・v-data-tableでheightを指定してもfixed-headerが反映されない
+	→thか、その親にoverflowが指定されているとだめだった。

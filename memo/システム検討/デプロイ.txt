@@ -27,6 +27,7 @@
             ・REDIS_PORT
             ・REDIS_PASSWORD
             ・FRONT_ORIGIN
+            ・PORT
 
 ■フロントサーバ
     ・RenderでStatic Site作成
@@ -36,3 +37,12 @@
             ・VITE_API_URL: バックエンドサーバのURL
                 ・.env.local：ローカル実行時のURLを記載。npm run dev(vite)実行時に読み込まれる。gitアップロード不要。
                 ・.env.production：本番実行時のURLを記載。npm run build(vite build)実行時に読み込まれる。gitアップロードが必要。
+        ・リロード時、そのままだとnot foundになってしまうので以下を設定。
+            ・Static SiteののメニューからRedirect&Rewriteを選択
+            ・以下の行を追加
+                ・Source：　/*
+                ・Destination: /index.html
+                ・Action: Rewrite
+            ・一度上記の設定をミスると、再度設定しなおしても上手く反映されず、新しくStatic Siteを作り直すことになった。
+        ・あとindex.htmlのheadに以下の行を追加？（本当に必要かは謎）
+            ・<base href="/" />

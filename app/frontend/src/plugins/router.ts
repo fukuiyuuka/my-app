@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from "vue-router";
 import Login from "../components/Login.vue";
 import Register from "../components/Register.vue";
 import Home from "../components/Home.vue";
-import Error from "../components/Error.vue";
 import Todo from "../components/HomeContents/Todo.vue";
 
 import { logout } from "./common";
@@ -10,7 +9,6 @@ import { logout } from "./common";
 const routes = [
   { path: "/", component: Login },
   { path: "/register", component: Register },
-  { path: "/error", component: Error },
   {
     path: "/home",
     component: Home,

@@ -50,11 +50,10 @@ api.interceptors.response.use(
     console.error("レスポンスエラー:", error);
 
     //トークンがないor失効時、ログイン画面に遷移。
-    if (["401", "403"].includes(error.response?.status)) {
+    if ([401, 403].includes(error.response?.status)) {
       alert("Your session has expired, please login again.");
       logout();
     }
-    router.push("/error");
     return Promise.reject(error);
   }
 );

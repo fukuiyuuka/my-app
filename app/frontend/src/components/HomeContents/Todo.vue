@@ -48,7 +48,7 @@ const loading = ref(false);
 const saveError = ref(false);
 const taskList = ref<TaskGroup[]>([]);
 const savedData = ref("");
-const expanded = ref<number[]>([]);
+const expanded = ref<any[]>([]);
 const expandAll = ref(false);
 const headers = [
   { title: "", key: "data-table-expand", width: "7%", sortable: false },
@@ -528,7 +528,7 @@ onBeforeUnmount(() => {
             @click:row="onTaskClick"
             item-value="taskId"
             show-expand
-            :expanded.sync="expanded as any"
+            :expanded.sync="expanded"
           >
             <!-- 展開ボタン列のヘッダー -->
             <template v-slot:header.data-table-expand>
@@ -690,6 +690,7 @@ onBeforeUnmount(() => {
               v-model="taskDetail.editContent"
               variant="outlined"
               rows="20"
+              class="mutli-row"
             ></v-textarea>
           </div>
           <div v-else>
@@ -724,5 +725,9 @@ onBeforeUnmount(() => {
   min-height: 0 !important;
   line-height: 1 !important;
   border-bottom: none !important;
+}
+
+.mutli-row {
+  white-space: pre-line; /**改行の反映 */
 }
 </style>

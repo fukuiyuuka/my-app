@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -6,48 +39,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const router_1 = __importDefault(require("./router"));
 const cors_1 = __importDefault(require("cors"));
-const express_session_1 = __importDefault(require("express-session"));
-const redis_1 = require("redis");
-const connect_redis_1 = require("connect-redis");
+const jwt = __importStar(require("jsonwebtoken"));
 const app = (0, express_1.default)();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.use(express_1.default.json()); //リクエストをJSONで受け取る
 //フロントサーバのオリジンのみクロスオリジン通信を許可
 app.use((0, cors_1.default)({
     origin: process.env.FRONT_ORIGIN, //許可するオリジン
-    credentials: true, //Cookie付きの通信を許容するか
-}));
-const redisClient = (0, redis_1.createClient)({
-    socket: {
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT),
-        tls: process.env.NODE_ENV === "production", // UpstashはTLS必須
-        //tls: false, //開発環境はfalse
-    },
-    password: process.env.REDIS_PASSWORD,
-});
-redisClient.connect(); //Radis(インメモリDB)と接続
-const store = new connect_redis_1.RedisStore({ client: redisClient }); //セッションストア生成
-//セッション生成・検索ミドルウェア
-//cookieに保存されたセッションIDがセッションストア（redis）に存在していれば、
-//自動でセッション情報をreq.sessionに格納してくれる。なければ生成する。
-app.use((0, express_session_1.default)({
-    name: "my-app-session",
-    secret: "secret",
-    resave: false,
-    saveUninitialized: false, //セッションに何か書き込まれるまでは、セッションはストアされない
-    store: store,
-    cookie: {
-        httpOnly: true, //スクリプトからの値の読み取り不可
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
-    },
+    credentials: true, //Cookieも許可
 }));
 //ログ出力用ミドルウェア
 app.use((req, res, next) => {
     console.log("---リクエスト受け取り---");
     console.log(`methoc = ${req.method}, path = ${req.path}`);
-    console.log(`session = ${req.session ? JSON.stringify(req.session) : "なし"}`);
     console.log(`body = ${req.body ? JSON.stringify(req.body) : "なし"}`);
     const originalJson = res.json.bind(res);
     res.json = (body) => {
@@ -63,41 +67,41 @@ app.use((req, res, next) => {
         console.log(`statusCode: ${code}`);
         return originalStatus(code);
     };
+    const originalSend = res.send.bind(res);
+    res.send = (msg) => {
+        console.log(`message: ${msg}`);
+        return originalSend(msg);
+    };
     next();
 });
-//ログアウト処理
-app.post("/logout", (req, res) => {
-    req.session.destroy((err) => {
-        //redisへの接続ができなかった場合などはエラーになる。
-        //セッションが無くてもエラーにはならない。
-        if (err) {
-            console.error("セッション破棄エラー:", err);
-            return res.status(500).send("ログアウト失敗");
-        }
-        res.clearCookie("my-app-session"); // クッキー消す
-        res.sendStatus(200);
-    });
-});
-//セッション管理用ミドルウェア
+//認証・認可
 app.use((req, res, next) => {
-    //未ログイン（セッションが存在しないか、セッションのlogindがfalseの時）
-    if (!req.session?.logined) {
-        //ログイン処理orユーザ登録リクエストの場合、処理続行。
-        if (req.path === "/login" || req.path === "/user") {
-            next();
-            return;
-        }
-        //未ログインで上記処理以外を実施しようとした場合、処理中断。
-        //レスポンスを返し、フロントでログイン画面に遷移させる。
-        res.status(401).json({ message: "Unauthorized" });
+    //認証不要
+    if (["/login", "/user"].includes(req.path)) {
+        next();
         return;
     }
-    //上記以外の場合（req.session.logined = true）、ログイン済み。処理続行
-    next();
+    const authHeader = req.headers["authorization"];
+    if (!authHeader) {
+        //認証されていない（誰？）
+        //トークンがない
+        res.status(401).send("Unauthorized");
+        return;
+    }
+    const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+    const token = authHeader.split(" ")[1];
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        //認可されていない（誰か分かっているけど、操作が許可されていない）
+        //トークンの有効期限切れ
+        if (err)
+            return res.status(403).send("Forbidden");
+        req.user = user;
+        next();
+    });
 });
 //API呼び出し
 app.use(router_1.default);
-//エラーハンドラ（非同期関数での例外はキャッチできないらしい。要修正）
+//エラーハンドラ（非同期関数での例外はキャッチできない。）
 const errorHandler = (err, req, res, next) => {
     if (!err)
         return;
@@ -110,5 +114,5 @@ const errorHandler = (err, req, res, next) => {
 app.use(errorHandler);
 //サーバ起動
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });

@@ -40,6 +40,7 @@ exports.postLogin = void 0;
 const prismaClient_1 = require("../prismaClient"); // Prisma Clientをインポート
 const t = __importStar(require("@yukafukui/shared-type"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const jwt = __importStar(require("jsonwebtoken"));
 /**
  * ============================================
  * メソッド： POST
@@ -62,14 +63,19 @@ const postLogin = async (req, res) => {
         const match = await bcryptjs_1.default.compare(reqBody.password, user.password);
         if (match) {
             //ログイン成功
+            const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+            //DBと照合し、成功したらtokenを生成
+            const token = jwt.sign({ id: user.id, username: user.name }, JWT_SECRET, {
+                expiresIn: "1h",
+            });
             const resBody = {
                 code: 0,
                 data: {
                     successLogin: true,
                     user: user,
+                    token: token,
                 },
             };
-            req.session.logined = true; //セッションの状態を更新
             res.json(resBody);
             return;
         }

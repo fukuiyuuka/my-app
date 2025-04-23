@@ -13,5 +13,6 @@ exports.PostLoginReqSchema = zod_1.z.object({
 const PostLoginResDataSchema = zod_1.z.object({
     successLogin: zod_1.z.boolean().optional(),
     user: UserSchema_1.UserSchema.optional(),
+    token: zod_1.z.string().optional(),
 });
 exports.PostLoginResSchema = (0, commonType_1.createResSchema)(PostLoginResDataSchema);

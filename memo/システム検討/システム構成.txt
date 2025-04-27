@@ -141,6 +141,7 @@ npm install ts-node --save-dev　（nodejsでtsファイル実行すると自動
 	・ioredis…インストールしたけど使ってない。redisだけでできそう→セッションログインを辞めたため不要。
 	・connect-redis…radisとexpress-session連携→セッションログインを辞めたため不要。
 		・使い方：https://www.npmjs.com/package/connect-redis
+	・jsonwebtoken…認証用JWT生成
 
 ■vscode
 

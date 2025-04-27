@@ -524,7 +524,7 @@ onBeforeUnmount(() => {
             :items="taskList"
             :items-per-page="-1"
             hide-default-footer
-            class="fixed-table sticky_table"
+            class="fixed-table"
             @click:row="onTaskClick"
             item-value="taskId"
             show-expand
